@@ -1,0 +1,303 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    {include file="Public/header"/}
+    <title>幻灯片管理</title>
+    <style type="text/css">
+        ul.pic_list{
+            width: 100%;
+            height: 200px;
+        }
+        ul.pic_list>li{
+            position: relative;
+            float: left;
+            width:17.7%;
+            margin: 1%;
+            border: solid 1px #c5c5c5;
+        }
+        ul.pic_list>li>a,
+        ul.pic_list>li a img{
+            width:100%;
+            height:160px;
+        }
+        ul.pic_list>li>a:hover{
+            font-weight: 600;
+            text-decoration: none;
+        }
+        div.pic_operation{
+            width:100%;
+            height: 27px;
+            margin-top: -52px;
+            text-align: center;
+            z-index: 99999;
+            position:absolute;
+            background: rgba(99, 98, 98, 0.8);
+        }
+        div.pic_operation ul li{
+            float: left;
+            margin: 3%;
+            width: 19%;
+        }
+        div.pic_operation ul li a {
+            color: #f5f5f5;
+        }
+        div.tab-scro{
+            height: 430px;
+            overflow-y: scroll;
+            border: solid 1px #ddd;
+            border-top: 0;
+            border-right: 0;
+        }
+
+        /* 设置滚动条的样式 */
+        ::-webkit-scrollbar {
+            width: 1px;
+            height: 1px;
+        }
+        /* 滚动槽 */
+        ::-webkit-scrollbar-track {
+            -webkit-box-shadow: inset 0 0 6px #ddd;
+            border-radius: 2px;
+        }
+        /* 滚动条滑块 */
+        ::-webkit-scrollbar-thumb {
+            border-radius: 2px;
+            background: rgba(0,0,0,0.1);
+            -webkit-box-shadow: inset 0 0 6px #ddd;
+        }
+        ::-webkit-scrollbar-thumb:window-inactive {
+            background: rgba(129,211,184,0.4);
+        }
+        div.tab-scro table{
+            border-top: 0;
+            border-right: 0;
+
+        }
+        div.tab-scro table tr td{
+            border-left: 0;
+            border-right: 0;
+        }
+        div.tab-scro table tr td a:hover{
+            color: #333333;
+            background-color: #bddef5;;
+        }
+        div.pic-name{
+            background-color: #bddef5;
+            height: 25px;
+            line-height: 25px;
+        }
+        div.add-pic{
+            width: 416px;
+            margin: 5px;
+        }
+
+        span.noimg{
+            width: 150px;
+            height: 110px;
+            display: block;
+            margin-top: 24%;
+            margin-left: 13%;
+            font-size: 16px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<nav class="breadcrumb">
+    <i class="Hui-iconfont">&#xe67f;</i>
+    首页
+    <span class="c-gray en">&gt;</span>
+    系统设置
+    <span class="c-gray en">&gt;</span>
+    幻灯片分组
+    <a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" >
+        <i class="Hui-iconfont">&#xe68f;</i>
+    </a>
+</nav>
+<div class="page-container">
+    <div class="cl pd-5 bg-1 bk-gray mt-20">
+		<span class="l">
+             <a class="btn btn-primary radius" href="javascript:;" onclick="slide_group_add('新增分组','{:url('slideGroupAdd')}','100%')">
+                 <i class="Hui-iconfont">&#xe600;</i>
+                 新增分组
+             </a>
+		</span>
+    </div>
+
+    <div class="mt-20">
+        <table class="table table-border table-bordered table-bg sorting_desc table-sort">
+            <!--<thead>
+            <tr class="text-c">
+                <th width="25"><input type="checkbox" value="" name=""></th>
+                <th width="40">ID</th>
+                <th width="80">标题</th>
+                <th>图片个数</th>
+                <th width="70">操作</th>
+            </tr>
+            </thead>-->
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{include file="Public/footer" /}
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="/Hui/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+<script type="text/javascript">
+    $('.table-sort').dataTable({
+        "createdRow": function( row, data, dataIndex ) {
+            $(row).addClass( 'text-c' );
+        },
+        stateSave:true,  //状态保存
+        serverSide:true, //服务器模式
+        processing:true, //打印信息字符信息
+        paging    :true, // 开启本地分页
+        searching :true, //开启搜索
+        lengthMenu:[10,20,30,40,100,150,300], //左上角select选项
+        ajax: {
+            "url":"",
+            "data":function(d){    //额外传递的参数
+            }
+        },
+        aoColumns:[
+            {
+                data : "",
+                "render" : function(full,type,data){
+                    if(data){
+                        view = '<ul class="pic_list">';
+                        $.each(data,function(k,v){
+                            var slideurl = 'slide.html?id='+v.id+'';
+                            var img = v.image == ''?'<span class="noimg"><i class="Hui-iconfont"></i>待添加</span>':'<img class="displayImg" src="'+ v.image +'" height="150" width="170"/>';
+                            view += '<li>' +
+                                '<a href="'+slideurl+'">'+ img +'</a>' +
+                                '<div class="pic-name">' +
+                                '<label for="checked'+ v.id +'">' +
+                                '<span>'+ v.title +'</span></label>' +
+                                '</div>' +
+                                '<div class="pic_operation"><ul>' +
+                                '<li><a href="javascript:;" onclick="groupNameEdit(\''+v.title+'\','+v.id+');" title="重命名">重命名</a></li>' +
+                                '<li><a href="'+ slideurl +'" title="编辑">编辑</a></li>' +
+                                '<li><a href="javascript:;" onclick="slide_group_del('+v.id+',this);" data-id="'+ v.id +'" title="删除">删除</a></li>' +
+                                '<li><span style="color: #fff;"><i class="Hui-iconfont"></i>&nbsp;'+ v.slideNum +'</span></li>'+
+                                '</ul></div>' +
+                                '</li>';
+                        });
+                        return	view +='</ul>';
+                    }
+                }
+            }
+            /*{
+                "data": "id",
+                "render": function (data, type, full, meta) {
+                    return '<input type="checkbox"  name=""  value="' + data + '" />';
+                },
+
+                "orderable":false
+            },
+            {data : "id"},
+            {data : "title"},
+            {data : "slideNum"},
+            {
+                data : "id",
+                "render" : function (data){
+                    return '<a title="编辑" href="javascript:;" onclick="slide_edit(\''+"编辑"+'\',\''+'slideEdit.html?id='+data+'\','+data+')" style="text-decoration:none"><i class="Hui-iconfont">&#xe6df;</i></a><a title="删除" href="javascript:;" onclick="slide_del(this,'+data+')" class="ml-5" style="text-decoration:none"><i class="Hui-iconfont">&#xe6e2;</i></a> ';
+                }
+            }*/
+        ]
+    });
+
+    function slide_group_add(title,url){
+        layer.ready(function () {
+            layer.prompt({
+                minlength: 0,
+                formType: 2,
+                value: '',
+                title: title
+            }, function(value, index){
+                if (name != value) {
+                    //setChange(id, 'name', value, url);
+                    $.post(url, {'title':value},function (data) {
+                        if (data.code) {
+                            layer.msg(data.msg, { icon: 1, time: 1500},function () {
+                                    window.location.reload();
+                                }
+                            );
+                        } else {
+                            layer.msg(data.msg, { icon: 5, time: 1500});
+                        }
+                    });
+                }
+                layer.close(index);
+            });
+        });
+    }
+
+    function slide_group_edit(title,url){
+        layer_show(title,url);
+    }
+
+    var slideGroupDel = "{:url('slideGroupDel')}";
+    function slide_group_del(id,obj){
+        layer.confirm('分组删除须谨慎，确认要删除吗？',function(index){
+            $.ajax({
+                type: 'POST',
+                url: slideGroupDel,
+                data:{id : id},
+                dataType: 'json',
+                success: function(data){
+                    if(data.code){
+                        $(obj).parents("li").remove();
+                        layer.msg('已删除!',{icon:1,time:1000},function () {
+                            location.reload();
+                        });
+                    }else {
+                        layer.msg(data.msg,{icon:5});
+                    }
+                },error:function(data) {
+                    layer.msg(data.msg,{icon:5});
+                }
+            });
+        });
+    }
+
+    /* 修改分组名 */
+    function groupNameEdit(name,id){
+        var url = '{:url("slidegroupedit")}';
+        layer.ready(function () {
+            layer.prompt({
+                minlength: 0,
+                formType: 2,
+                value: name,
+                title: '设置分组名'
+            }, function(value, index){
+                if (name != value) {
+                    //setChange(id, 'name', value, url);
+                    $.post(url, {'id':id,'title':value},function (data) {
+                        if (data.code) {
+                            layer.msg(data.msg, { icon: 1, time: 1500},function () {
+                                    window.location.reload();
+                                }
+                            );
+                        } else {
+                            layer.msg(data.msg, { icon: 5, time: 1500});
+                        }
+                    });
+                }
+                layer.close(index);
+            });
+        });
+    }
+
+    /* 相册层 */
+    function picSee() {
+        layer.photos({
+            photos: '.pic_list',
+            shift: 5
+        });
+    }
+</script>
+</body>
+</html>

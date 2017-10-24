@@ -1,0 +1,108 @@
+<!--_meta 作为公共模版分离出去-->
+<!DOCTYPE HTML>
+<html>
+<head>
+    {include file="Public/header"/}
+    <title>编辑配置</title>
+</head>
+<body>
+<article class="page-container">
+    <div class="codeView ">
+        <form action="" method="" class="form form-horizontal" id="form-edit">
+            <div class="row cl">
+                <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>配置标识:</label>
+                <div class="formControls col-xs-8 col-sm-8">
+                    <input type="text" class="input-text" placeholder="只能使用英文且不能重复" value="{$info['name']}" name="name" >
+                </div>
+            </div>
+            <div class="row cl">
+                <label class="form-label col-xs-4 col-sm-3">配置标题:</label>
+                <div class="formControls col-xs-8 col-sm-8">
+                    <input type="text" class="input-text" placeholder="用于后台显示的配置标题" value="{$info['title']}" name="title" >
+                </div>
+            </div>
+            <div class="row cl">
+                <label class="form-label col-xs-4 col-sm-3">分组:</label>
+                <div class="formControls col-xs-8 col-sm-8">
+                    <select datatype="*" name="group" size="1" class="select">
+                        <option {if condition='$info.group eq 0'}selected {/if} value="">不分组</option>
+                        <option {if condition='$info.group eq 1'}selected {/if} value="1">基本</option>
+                        <option {if condition='$info.group eq 2'}selected {/if} value="2">内容</option>
+                        <option {if condition='$info.group eq 3'}selected {/if} value="3">用户</option>
+                        <option {if condition='$info.group eq 4'}selected {/if} value="4">系统</option>
+                        <option {if condition='$info.group eq 5'}selected {/if} value="4">网站基本</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row cl">
+                <label class="form-label col-xs-4 col-sm-3">排序:</label>
+                <div class="formControls col-xs-8 col-sm-8">
+                    <input type="text" class="input-text radius size-M" value="{$info['sort']}" name="sort">
+                </div>
+            </div>
+            <div class="row cl">
+                <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>配置值:</label>
+                <div class="formControls col-xs-8 col-sm-8">
+                    <textarea name="value"  cols="30" rows="10" class="textarea radius">{$info['value']}</textarea>
+                </div>
+            </div>
+            <div class="row cl">
+                <label class="form-label col-xs-4 col-sm-3">说明:</label>
+                <div class="formControls col-xs-8 col-sm-8">
+                    <textarea name="remark"  cols="30" rows="10" class="textarea radius" placeholder="配置详细说明">{$info['remark']}</textarea>
+                </div>
+            </div>
+            <div class="row cl">
+                <div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-3">
+                    <input class="btn btn-primary" type="submit" value="&nbsp;&nbsp;提交&nbsp;&nbsp;">
+                </div>
+            </div>
+        </form>
+    </div>
+
+</article>
+{include file="Public/footer" /}
+
+<!--请在下方写此页面业务相关的脚本-->
+{include file="Public/expand-js" /}
+<script type="text/javascript">
+    $(function(){
+
+        $("#form-edit").validate({
+            rules:{
+                name:{
+                    required:true
+                },
+                value:{
+                    required:true
+                },
+            },
+            onkeyup:false,
+            focusCleanup:true,
+            success:"valid",
+            submitHandler:function(form){
+                var data = $("#form-edit").serialize();
+                $.ajax({
+                    type: "POST",
+                    url: '',
+                    data: data,
+                    success: function(data) {
+                        if(data.code)
+                        {
+                            layer.msg(data.msg,{icon: 1,time:1500},function () {
+                                window.parent.location.reload();
+                            });
+                        }else{
+                            layer.msg(data.msg,{icon: 5,time:2000})
+                        }
+                    },error: function(request) {
+                        layer.msg('操作错误，请重试',{icon: 5,time:2000})
+                    }
+                });
+            }
+        })
+    });
+</script>
+<!--/请在上方写此页面业务相关的脚本-->
+</body>
+</html>

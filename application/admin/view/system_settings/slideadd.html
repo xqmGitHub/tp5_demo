@@ -1,0 +1,209 @@
+<!--_meta 作为公共模版分离出去-->
+<!DOCTYPE HTML>
+<html>
+<head>
+    {include file="Public/header"/}
+    <title>添加幻灯片</title>
+    <link rel="stylesheet" type="text/css" href="/Hui/icheck/icheck.css">
+    <link rel="stylesheet" type="text/css" href="/Hui/lib/webuploader/0.1.5/webuploader.css"/>
+    <style type="text/css">
+        .myimg_div{
+            width: 66.66%;
+            height: 150px;
+            overflow: hidden;
+            padding-left: 1.5%;
+        }
+        .myimg_div img{
+            width:50%;
+            float: left;
+        }
+
+    </style>
+</head>
+<body>
+<article class="page-container">
+    <div class="codeView ">
+        <form class="form form-horizontal" id="form-add">
+            <div class="row cl">
+                <label class="form-label col-xs-4 col-sm-3">标题:</label>
+                <div class="formControls col-xs-6 col-sm-6">
+                    <input type="text" class="input-text" value="" name="title" >
+                </div>
+            </div>
+            <div class="row cl">
+                <label class="form-label col-xs-4 col-sm-3">链接:</label>
+                <div class="formControls col-xs-6 col-sm-6">
+                    <input type="text" class="input-text" value="" name="main_link" >
+                </div>
+            </div>
+            <div class="row cl">
+                <label class="form-label col-xs-4 col-sm-3">链接新开窗口:</label>
+                <div class="mt-20 skin-minimal">&nbsp;&nbsp;
+                    <div class="radio-box">
+                        <input type="radio" id="radio-1-m" name="target" value="1" checked >
+                        <label for="radio-1-m">是</label>
+                    </div>
+                    <div class="radio-box">
+                        <input type="radio" id="radio-2-m" name="target" value="0" >
+                        <label for="radio-2-m">否</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row cl">
+                <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>图片:</label>
+                <input type="hidden" id="image" name="image" value="">
+                <input type="hidden" id="size" name="size" value="">
+                <input type="hidden" id="md5_hash" name="md5_hash" value="">
+                <input type="hidden" id="extension" name="extension" value="">
+                <div class="formControls imgdiv">
+                    <img src="" style="display: none;" class="addimg">
+                    <div class="formControls col-xs-6 col-sm-6">
+                        <div id="uploader">
+                            <div id="filePicker">选择图片</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row cl">
+                <label class="form-label col-xs-4 col-sm-3">摘要:</label>
+                <div class="formControls col-xs-6 col-sm-6">
+                <textarea cols="30" rows="10" class="textarea radius" name="summary"></textarea>
+                </div>
+            </div>
+            <div class="row cl">
+                <input type="hidden" name="group" value="{$group_id}">
+                <div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-3">
+                    <input class="btn btn-primary" type="submit" value="&nbsp;&nbsp;提交&nbsp;&nbsp;">
+                </div>
+            </div>
+        </form>
+    </div>
+</article>
+{include file="Public/footer" /}
+
+<!--请在下方写此页面业务相关的脚本-->
+{include file="Public/expand-js" /}
+<script type="text/javascript" src="/Hui/lib/webuploader/0.1.5/webuploader.min.js"></script>
+<script type="text/javascript">
+    $(function(){
+        //单选框
+        $('.skin-minimal input').iCheck({
+            checkboxClass: 'icheckbox-blue',
+            radioClass: 'iradio-blue',
+            increaseArea: '20%'
+        });
+
+        var uploader = WebUploader.create({
+            fileSizeLimit: 10 * 1024 *1024,//限制上传所有文件大小
+            fileSingleSizeLimit: 5 * 1024 *1024,//限制上传单个文件大小
+            // 选完文件后，是否自动上传。
+            auto: true,
+            // swf文件路径
+            swf: "/Hui/lib/webuploader/0.1.5/Uploader.swf",
+            // 文件接收服务端。
+            server: "{:url('slideFileSave')}",
+            // 选择文件的按钮。可选。
+            // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+            pick: "#filePicker",
+            fileVal: "file",
+            multiple: false,
+            //fileNumLimit: 1,
+            // 只允许选择图片文件。
+            accept: {
+                title: 'Images',
+                extensions: 'jpg,jpeg,png,gif,bmp',
+                mimeTypes: 'image/jpg,image/jpeg,image/png,image/gif,image/bmp',
+            }
+        });
+        uploader.options.formData.act = 'add';
+        // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+        uploader.on( 'uploadSuccess', function( file ,data) {
+            if(data.status==1){
+                var img = data.data[0];
+                $('.imgdiv').addClass('myimg_div');
+                $("#image").val(img.image);
+                $("#size").val(img.size);
+                $("#md5_hash").val(img.md5_hash);
+                $("#extension").val(img.extension);
+                 //var img_str = '<img src="'+ img.image.substr(1) +'">';
+                $(".addimg").attr('src',img.image.substr(1)).css('display','block');
+            }else {
+                layer.open({
+                    title: '提示',
+                    content: '上传失败，'+ data.info
+                })
+            }
+        });
+        /**
+         * 验证文件格式以及文件大小
+         */
+        uploader.on("error", function (type) {
+            switch (type){
+                case "Q_TYPE_DENIED":
+                    layer.msg("请上传JPG、PNG、GIF、BMP格式文件");
+                    break;
+                case "Q_EXCEED_SIZE_LIMIT":
+                    layer.msg("全部文件大小不能超过50M");
+                    break;
+                case "F_EXCEED_SIZE":
+                    layer.msg("文件大小不能超过5M");
+                    break;
+                case "F_DUPLICATE":
+                    layer.msg("文件已经上传过了");
+                    break;
+                default:
+                    layer.msg("上传出错！请检查后重新上传！错误代码"+type);
+                    break;
+            }
+        });
+        uploader.on( 'uploadProgress', function( file, percentage ) {
+            var $li = $( '#'+file.id ),
+                $percent = $li.find('.progress span');
+            // 避免重复创建
+            if ( !$percent.length ) {
+                $percent = $('<p class="progress"><span></span></p>')
+                    .appendTo( $li )
+                    .find('span');
+            }
+            $percent.css( 'width', percentage * 100 + '%' );
+        });
+        // 完成上传完了，成功或者失败，先删除进度条。
+        uploader.on( 'uploadComplete', function( file ) {
+            $( '#'+file.id ).find('.progress').remove();
+        });
+
+        $("#form-add").validate({
+            rules:{
+                image:{
+                    required:true
+                },
+            },
+            onkeyup:false,
+            focusCleanup:true,
+            success:"valid",
+            submitHandler:function(form){
+                var data = $("#form-add").serialize();
+                $.ajax({
+                    type: "POST",
+                    url: '',
+                    data: data,
+                    success: function(data) {
+                        if(data.code)
+                        {
+                            layer.msg(data.msg,{icon: 1,time:1500},function () {
+                                window.parent.location.reload();
+                            });
+                        }else{
+                            layer.msg(data.msg,{icon: 5,time:2000})
+                        }
+                    },error: function(request) {
+                        layer.msg('操作错误，请重试',{icon: 5,time:2000})
+                    }
+                });
+            }
+        })
+    });
+</script>
+<!--/请在上方写此页面业务相关的脚本-->
+</body>
+</html>

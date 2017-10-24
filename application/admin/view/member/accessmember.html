@@ -1,0 +1,94 @@
+﻿<!--_meta 作为公共模版分离出去-->
+<!DOCTYPE HTML>
+<html>
+<head>
+	{include file="Public/header"/}
+	<title>成员授权</title>
+</head>
+<body>
+<article class="page-container">
+	<form method="post" class="form form-horizontal" id="form-add">
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-3">成员授权：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				{present name="data_list['access']"}
+				<dl class="permission-list">
+					<dt>
+						<label><b>&nbsp;已赋值&nbsp;</b></label>
+					</dt>
+					<dd>
+						<dl class="cl permission-list2">
+							<dd>
+								{volist name="data_list['access']" id="val" key="ke"}
+								<label class="">&nbsp;
+									<input type="checkbox" value="{$val['id']}" name="access[]" id="user-Character-1-0-{$ke}" checked="checked">&nbsp;{$val['nick_name']}&nbsp;</label>
+								{/volist}
+							</dd>
+						</dl>
+					</dd>
+				</dl>
+				{/present}
+				{present name="data_list['no_access']"}
+				<dl class="permission-list">
+					<dt>
+						<label><b>&nbsp;未赋值&nbsp;</b></label>
+					</dt>
+					<dd>
+						<dl class="cl permission-list2">
+							<dd>
+								{volist name="data_list['no_access']" id="val" key="ke"}
+								<label class="">&nbsp;
+									<input type="checkbox" value="{$val['id']}" name="access[]" id="user-Character-1-0-{$ke}">&nbsp;{$val['nick_name']}&nbsp;</label>
+								{/volist}
+							</dd>
+						</dl>
+					</dd>
+				</dl>
+				{/present}
+			</div>
+		</div>
+		<input type="hidden" name="group_id" value="{$group_id}">
+		<div class="row cl">
+			<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-3">
+				<button type="submit" class="btn btn-success radius" id="admin-role-save"><i class="icon-ok"></i> 确定</button>
+			</div>
+		</div>
+	</form>
+</article>
+
+{include file="Public/footer" /}
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="/Hui/lib/jquery.validation/1.14.0/jquery.validate.js"></script>
+<script type="text/javascript" src="/Hui/lib/jquery.validation/1.14.0/validate-methods.js"></script>
+<script type="text/javascript" src="/Hui/lib/jquery.validation/1.14.0/messages_zh.js"></script>
+<script type="text/javascript">
+    $(function(){
+        //表单验证
+        $("#form-add").validate({
+            rules:{
+            },
+            onkeyup:false,
+            focusCleanup:true,
+            success:"valid",
+            submitHandler:function(form){
+                var data = $('#form-add').serialize();
+                $(form).ajaxSubmit(function(data){
+                    if(data.code)
+                    {
+                        layer.msg(data.msg);
+                        setTimeout(function(){
+                            window.parent.location.reload();
+                            window.location=data.opt.url;
+                        }, 2000);
+                    } else {
+                        layer.msg(data.msg);
+                    }
+                });
+            }
+        })
+    })
+</script>
+<!--/请在上方写此页面业务相关的脚本-->
+</body>
+</html>

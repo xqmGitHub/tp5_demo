@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {include file="Public/header"/}
+    <link rel="stylesheet" type="text/css" href="/Hui/lib/webuploader/0.1.5/webuploader.css"/>
+    <title>Title</title>
+    <style>
+        #list{list-style-type: none;margin-top: 45px;}
+        .img{
+            float: left;
+        }
+        .content{
+            margin-left: 15px;
+            float: left;
+        }
+        .up, .del ,.down{
+            display:block;
+            width: 60px;
+            border: 1px solid silver;
+            text-align: center;
+            margin: 5px;
+        }
+        .set{
+            text-align: center;
+            display:block;
+            width: 100px;
+            border: 1px solid silver;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+<article class="page-container">
+    <form action="" method="post" class="form form-horizontal" id="form-add">
+        <div>
+            <div style="width: 50%;" class="cl f-l">
+                <div class="row cl">
+                    <label class="form-label col-xs-4 col-sm-3"><span class="c-red"></span>封面:</label>
+                    <div class="formControls col-xs-8 col-sm-7">
+                        <img src="" names="" id="cover" width="150" height="150">
+                    </div>
+                </div>
+                <div class="row cl">
+                    <label class="form-label col-xs-4 col-sm-3"><span class="c-red"></span>图片：</label>
+                    <div class="formControls col-xs-8 col-sm-7">
+                        <div id="uploader">
+                            <!--用来存放item-->
+                            <div id="fileList" class="uploader-list"></div>
+                            <div id="filePicker">选择图片</div>
+                        </div>
+                        <ul id="list"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</article>
+</body>
+{include file="Public/footer" /}
+<script type="text/javascript" src="/Hui/lib/webuploader/0.1.5/webuploader.min.js"></script>
+<script>
+    $(function () {
+        var $btn = $('#ctlBtn');
+        var array = {};
+        var del_array={};
+        var i = 0,l=0;
+        var cover =  $('#cover');
+        var myobj =  [];
+        var str = '';
+        jQuery.each(myobj, function(i, val) {
+            str+= '<option value="'+i+'">'+val+'</option>';
+        });
+        var uploader = WebUploader.create({
+            // 选完文件后，是否自动上传。
+            auto: true,
+            // swf文件路径
+            swf: "/Hui/lib/webuploader/0.1.5/Uploader.swf",
+            // 文件接收服务端。
+            server: "{:url('filesave')}",
+            // 选择文件的按钮。可选。
+            // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+            pick: "#filePicker",
+            fileVal: "file",
+            fileNumLimit: 10,
+            // 只允许选择图片文件。
+            accept: {
+                title: 'Images',
+                extensions: 'jpg,jpeg,png,gif,bmp',
+                mimeTypes: 'image/jpg,image/jpeg,image/png,image/gif,image/bmp',
+//                mimeTypes: 'image/*'  //chrome选择文件时会延迟几秒钟 把* 改成具体的 MIME 类型即可
+            }
+        });
+        var $list = $("#list");
+        var thumbnailWidth = 150;   //缩略图高度和宽度 （单位是像素），当宽高度是0~1的时候，是按照百分比计算，具体可以看api文档
+        var thumbnailHeight = 150;
+        uploader.on( 'fileQueued', function( file ) {
+            var $li = $(
+                    '<li class="li-list"><div id="' + file.id + '" class="file-item thumbnail">' +
+                    '<img class="img">' +
+                    '<div class="content">' +
+                    '<span class="up">↑</span><span class="down">↓</span>' +
+//                    '<select>' + str + '</select>' +
+                    '<span class="del">删除</span><span class="set">设为封面</span>' +
+                    '</div>'+
+                    '</div></li>'
+                ),
+                $img = $li.find('img');
+            var $del = $li.find('.del');
+
+            // $list为容器jQuery实例
+            $list.append( $li );
+            array[i] = file.id;
+            l++;
+            // 创建缩略图
+            // 如果为非图片文件，可以不用调用此方法。
+            // thumbnailWidth x thumbnailHeight 为 100 x 100
+            uploader.makeThumb( file, function( error, src ) {
+                if ( error ) {
+                    $img.replaceWith('<span>不能预览</span>');
+                    return;
+                }
+                /* 默认进来封面是第一张图片*/
+                if(file.id == 'WU_FILE_0'){
+                    if( cover.attr("src")== ''){
+                        cover.attr("src",src);
+                        cover.attr('names', file['name'] );
+                    }
+                }
+                /**/
+                $img.attr( 'src', src );
+
+            }, thumbnailWidth, thumbnailHeight );
+
+            /* 删除*/
+            $del.click(function(){
+                var id = $(this).parent().parent().attr("id");
+                var obj =uploader.getFile(id);
+                var n = uploader.removeFile(obj,true);
+                jQuery.each(array, function(i, val) {
+                    if(val==id){
+                        delete array[i];
+                    }
+                });
+                var $del_src = $("#" + id).find("img").attr("src");
+                var j = 0;
+                jQuery.each(array, function(i, val) {
+                    del_array[j] = val;
+                    j++;
+                });
+                l = j;
+
+                if(cover.attr("src") == $del_src){
+                    if (isEmptyObject(array)) {
+                        cover.attr("src",'');
+                        cover.attr('names', '');
+                    }else {
+                        cover.attr("src", $("#" + del_array[0]).find("img").attr("src"));
+                        cover.attr('names', uploader.getFile(del_array[0])['name']);
+                        cover.attr("file-id", $("#" + del_array[0]).attr("file-id"));
+                    }
+                }
+                $(this).parent().parent().parent().remove();
+            });
+            /*交换位置*/
+            var $up = $li.find('.up');
+            var $down = $li.find('.down');
+            var $set  =$li.find('.set');
+
+            $up.click(function(){
+                var li = $(this).parents("li");
+                var index =$(this).parents("li").index();
+                if(index != 0){
+                    var $shang = $(this).parents("li").prev(); //相邻的前一个同级元素
+                    li.after($shang)
+                }
+            });
+            $down.click(function(){
+                var len = $(this).parents("ul").find('li').length;
+                var li = $(this).parents("li");
+                var index =$(this).parents("li").index();
+                if(index < len){
+                    var $shang = $(this).parents("li").next(); //相邻的下一个同级元素
+                    li.before($shang)
+                }
+            });
+            $set.click(function(){
+                $(this).parents("li").find('.set').text('设为封面');
+                $set.text('已设为封面');
+                var src = $(this).parent().parent().find("img").attr("src");
+                var names = $(this).parent().parent().attr("file-name");
+                cover.attr( 'src', src );
+                cover.attr( 'names', names );
+                cover.attr( 'file-id', $(this).parent().parent().attr("file-id"));
+            });
+            i++;
+        });
+
+        // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+        uploader.on( 'uploadSuccess', function( file ,data) {
+            if(data.status==0){
+                var imgNum = $("#list").children('li').length;
+                console.log(imgNum);
+                if(imgNum == 1){
+                    $("#list li").remove();
+                    cover.attr("src",'');
+                }else {
+                    $("#list li").last().remove();
+                }
+                layer.open({
+                    title: '提示',
+                    content: '上传失败，'+ data.info
+                })
+            }else if(data.status){
+                // $( '#'+file.id ).addClass('upload-state-done');
+                $( '#'+file.id ).attr('file-id',data.data[0].id);
+                $( '#'+file.id ).attr('file-name',data.data[0].title);
+                if(cover.attr("names") == data.data[0].title){
+                    cover.attr("file-id",data.data[0].id);
+                }
+            }
+        });
+
+        // 文件上传失败，显示上传出错。
+        uploader.on( 'uploadError', function( file ) {
+            var $li = $( '#'+file.id ),
+                $error = $li.find('div.error');
+            // 避免重复创建
+            if ( !$error.length ) {
+                $error = $('<div class="error"></div>').appendTo( $li );
+            }
+            $error.text('上传失败');
+        });
+
+        uploader.on( 'uploadProgress', function( file, percentage ) {
+            var $li = $( '#'+file.id ),
+                $percent = $li.find('.progress span');
+            // 避免重复创建
+            if ( !$percent.length ) {
+                $percent = $('<p class="progress"><span></span></p>')
+                    .appendTo( $li )
+                    .find('span');
+            }
+            $percent.css( 'width', percentage * 100 + '%' );
+        });
+        // 完成上传完了，成功或者失败，先删除进度条。
+        uploader.on( 'uploadComplete', function( file ) {
+            $( '#'+file.id ).find('.progress').remove();
+        });
+
+        function isEmptyObject(obj) {
+            for (var key in obj) {
+                return false;
+            }
+            return true;
+        }
+    })
+</script>
+</html>

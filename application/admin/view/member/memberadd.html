@@ -1,0 +1,123 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+	{include file="Public/header"/}
+	<title>添加用户</title>
+</head>
+<body>
+<article class="page-container">
+	<form action="" method="post" class="form form-horizontal" id="form-add">
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>用户名：</label>
+			<div class="formControls col-xs-8 col-sm-8">
+				<input type="text" class="input-text" value=""
+					   placeholder="用户名会作为默认的昵称，请勿输入特殊符号和一些敏感词汇" name="username">
+			</div>
+		</div>
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-3">昵称：</label>
+			<div class="formControls col-xs-8 col-sm-8">
+				<input type="text" class="input-text" value=""
+					   placeholder="昵称不可超过15个字，如不填自动填充用户名"  name="nick_name" id="nick_name">
+			</div>
+		</div>
+
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-3">密码：</label>
+			<div class="formControls col-xs-8 col-sm-8">
+				<input type="password" class="input-text" value=""
+					   placeholder="用户密码不能少于6位"  name="password" id="password" >
+			</div>
+		</div>
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-3">确认密码：</label>
+			<div class="formControls col-xs-8 col-sm-8">
+				<input type="password" class="input-text" value="" placeholder="再次输入密码" id="repassword" name="repassword" >
+			</div>
+		</div>
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-3">邮箱：</label>
+			<div class="formControls col-xs-8 col-sm-8">
+				<input type="text" class="input-text" value="" placeholder="用户邮箱，用于找回密码等安全操作" name="email" id="email">
+			</div>
+		</div>
+		<div class="row cl">
+			<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-3">
+				<button type="submit" class="btn btn-success radius" id="admin-role-save"><i class="icon-ok"></i> 确定</button>
+			</div>
+		</div>
+	</form>
+</article>
+
+{include file="Public/footer" /}
+
+<!--请在下方写此页面业务相关的脚本-->
+{include file="Public/expand-js" /}
+<script type="text/javascript">
+$(function () {
+    $("#form-add").validate({
+        rules:{
+            username:{ //用户名
+                required:true,
+                minlength:4,
+                maxlength:16
+            },
+            nick_name:{ //昵称
+                minlength:4,
+                maxlength:16
+            },
+            password:{ //密码
+                required:true,
+                minlength:6,
+                maxlength:16
+            },
+            repassword:{
+                required:true,
+                equalTo: "#password"
+            },
+            email:{ //邮箱
+                required:true,
+                email:true
+            }
+        },
+        onkeyup:false,
+        focusCleanup:true,
+        success:"valid",
+        submitHandler:function(form) {
+            var username = $("input[name='username']").val();
+            var password = $("input[name='password']").val();
+            var repassword = $("input[name='repassword']").val();
+            var nick_name = $("input[name='nick_name']").val() == "" ? username : $("input[name='nick_name']").val();
+            var email = $("input[name='email']").val();
+
+            //console.log(name+password+nick_name+email);
+            $.ajax({
+                type: "POST",
+                url: '',
+                data: {
+                    'username': username,
+                    'password': password,
+                    'repassword': repassword,
+                    'nick_name': nick_name,
+                    'email': email
+                },
+                success: function (data) {
+                    if (data.code) {
+                        layer.msg(data.msg, {icon: 1, time: 1500},function () {
+                            window.parent.location.reload();
+                        });
+                    } else {
+                        layer.msg(data.msg, {icon: 5, time: 2000})
+                    }
+                }, error: function () {
+                    layer.msg('操作失败', {icon: 2, time: 2000});
+                }
+            });
+
+        }
+    });
+})
+</script>
+<!--/请在上方写此页面业务相关的脚本-->
+</body>
+</html>

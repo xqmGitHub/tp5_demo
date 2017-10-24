@@ -1,0 +1,198 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+	{include file="Public/header"/}
+	<title>权限管理</title>
+</head>
+<body>
+<nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 系统设置 <span class="c-gray en">&gt;</span> 行为日志 <a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+<div class="page-container">
+	<div class="cl pd-5 bg-1 bk-gray mt-20">
+		<span class="l">
+            <a class="btn btn-primary radius" href="javascript:;" onclick="admin_role_add('新增用户组','groupAdd.html','800')">
+                <i class="Hui-iconfont">&#xe600;</i>
+                新增分组
+            </a>
+			<a href="javascript:;" onclick="" class="btn btn-danger radius">
+                <i class="Hui-iconfont">&#xe6e2;</i>
+                批量删除
+            </a>
+		</span>
+	</div>
+	<div class="mt-20 ">
+		<table class="table table-border table-bordered table-hover table-bg table-sort">
+			<thead>
+			<tr class="text-c">
+				<th width="25"><input type="checkbox" value="" name=""></th>
+				<th width="40">用户组</th>
+				<th width="200">描述</th>
+				<th width="300">授权</th>
+				<th width="50">状态</th>
+				<th width="120">操作</th>
+			</tr>
+			</thead>
+			<tbody>
+
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{include file="Public/footer" /}
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="/Hui/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+<script type="text/javascript">
+    $('.table-sort').dataTable({
+
+        "createdRow": function( row, data, dataIndex ) {
+            $(row).addClass( 'text-c' );
+        },
+        "StateSave": true,//状态保存
+        "serverSide":true,
+        "Processing":true,
+        "paging":true,
+        "searching":true,
+        ajax: {
+            "url":"",
+            "data":function(d){    //额外传递的参数
+            }
+        },
+        "aoColumns": [
+            {
+                "data": "id",
+                "render": function (data, type, full, meta) {
+                    return '<input type="checkbox"  name=""  value="' + data + '" />';
+                },
+
+                "orderable":false
+            },
+            {"data":"title"},
+            {"data":"description"},
+            {
+                "className":"text-c",
+                data:"id",
+                "render": function (data, type, full, meta) {
+                    html ='<span><a href="javascript:" onclick="admin_role_access(\''+"访问授权"+'\',\''+"access.html?id="+data+'\',800)"> 访问&nbsp;</a></span><span><a href="javascript:"> 分类&nbsp; </a></span><span><a href="javascript:" onclick="admin_role_accessMember(\''+"成员授权"+'\',\''+"accessMember.html?id="+data+'\',800)">成员</a></span>';
+                    return html;
+                }
+            },
+            {
+                "className":"shop",
+                "data":"status",
+                "render":function(data){
+                    if(data){
+                        html = '<span class="label label-success radius">启用</span>';
+                    }else{
+                        html = '<span class="label label-defaunt radius">禁用</span>';
+                    }
+                    return html;
+                }, "orderable":false
+            },
+            {
+                "className":"status",
+                "data":{"status":"status","id":"id"},
+                "render":function(data, type, full, meta) {
+                    if (data.status) {
+                        html = '<a title="禁用" href="javascript:;" onclick="behavior_stop(this,'+data.id+','+data.status+')" style="text-decoration:none"> <i class="Hui-iconfont">&#xe6de;</i></a>';
+                    } else {
+                        html = '<a title="启用" href="javascript:;"  onclick="behavior_stop(this,'+data.id+','+data.status+')" style="text-decoration:none"> <i class="Hui-iconfont">&#xe603;</i></a>';
+                    }
+                    html+='<a title="编辑" href="javascript:;" onclick="admin_role_edit(\''+"编辑"+'\',\''+'groupEdit.html?id='+data.id+'\','+800+')" style="text-decoration:none"><i class="Hui-iconfont">&#xe6df;</i></a><a title="删除" href="javascript:;" onclick="admin_role_del(this,'+data.id+')" class="ml-5" style="text-decoration:none"><i class="Hui-iconfont">&#xe6e2;</i></a>';
+                    return html;
+                }, "orderable":false
+            }
+        ]
+    });
+	/*修改状态*/
+    var ajax_url = "";
+    var ajax_delete_url = "{:url('groupdel')}";
+	/*添加*/
+    function admin_role_add(title,url,w,h){
+        layer_show(title,url,w,h);
+    }
+	/*编辑*/
+    function admin_role_edit(title,url,w){
+        layer_show(title,url,w);
+    }
+	/*修改密码*/
+    function admin_role_update(title,url,w){
+        layer_show(title,url,w);
+    }
+	/*访问权限管理*/
+    function admin_role_access(title,url,w){
+        layer_show(title,url,w);
+    }
+    function admin_role_accessMember(title,url,w){
+        layer_show(title,url,w);
+    }
+
+    function behavior_stop(obj, id, status){
+        str = status==1?'确认要禁用吗？' : '确认要启用吗？';
+        layer.confirm(str,function(){
+            ajax_request(obj, id,status);
+        });
+    }
+	/*管理员-角色-删除*/
+    function admin_role_del(obj,id){
+
+        layer.confirm('行为删除须谨慎，确认要删除吗？',function(){
+            $.ajax({
+                type: 'POST',
+                data: {id: id},
+                url: ajax_delete_url,
+                dataType: 'json',
+                success: function(data){
+                    if(data.code == 1)
+                    {
+                        $(obj).parents("tr").remove();
+                        layer.msg('已删除!',{icon:1,time:1000});
+                    } else {
+                        layer.msg(data.msg + '!',{icon:5,time:1000});
+                    }
+                },
+                error:function(data) {
+                    layer.msg('出现错误，请重试!',{icon: 5,time:1000})
+                },
+            });
+        });
+    }
+	/*管理员-修改用户行为*/
+    function ajax_request(obj, id, status){
+        $.ajax({
+            type: 'POST',
+            data: {
+                id     : id,
+                status : status
+            },
+            url: ajax_url,
+            dataType: 'json',
+            error: function() {
+                layer.msg('操作错误，请重试',{icon: 5,time:1500})
+            },
+            success: function(data){
+
+                if(data.code)
+                {
+                    if(data.data.status==1){
+                        html = '<a style="text-decoration:none" onClick="behavior_stop(this,' + id + ',' + data.data.status + ')" href="javascript:;" title="禁用"><i class="Hui-iconfont">&#xe6de;</i></a>';
+                        view='<span class="label label-success radius">启用</span>';
+                    }else{
+                        html = '<a style="text-decoration:none" onClick="behavior_stop(this,' +  id + ',' + data.data.status + ')" href="javascript:;" title="启用"><i class="Hui-iconfont">&#xe603;</i></a>';
+                        view='<span class="label label-defaunt radius">禁用</span>';
+                    }
+
+                    $(obj).parent(".status").prepend(html);
+                    $(obj).parent(".status").prev('.shop').find("span").remove();
+                    $(obj).parent(".status").prev('.shop').prepend(view);
+                    $(obj).remove();
+                    layer.msg(data.msg,{icon: 1,time:1500});
+                }else{
+                    layer.msg(data.msg,{icon: 5,time:1500})
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>

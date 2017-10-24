@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<table>
+    <tbody>
+        <tr><td><span uid="1" to_uid="11" class="add_follow">加关注1</span></td></tr>
+        <tr><td><span uid="2" to_uid="22" class="add_follow">加关注2</span></td></tr>
+        <tr><td><span uid="3" to_uid="33" class="add_follow">加关注3</span></td></tr>
+        <tr><td><span uid="4" to_uid="44" class="add_follow">加关注4</span></td></tr>
+        <tr><td><span uid="5" to_uid="55" class="add_follow">加关注5</span></td></tr>
+    </tbody>
+</table>
+<table>
+    <tbody>
+    <tr><td><span uid="11" to_uid="1" class="add_follow">加关注1</span></td></tr>
+    <tr><td><span uid="22" to_uid="2" class="add_follow">加关注2</span></td></tr>
+    <tr><td><span uid="33" to_uid="3" class="add_follow">加关注3</span></td></tr>
+    <tr><td><span uid="44" to_uid="4" class="add_follow">加关注4</span></td></tr>
+    <tr><td><span uid="55" to_uid="5" class="add_follow">加关注5</span></td></tr>
+    </tbody>
+</table>
+<script type="text/javascript" src="/static/js/jquery-2.1.1.js"></script>
+<script>
+$(function () {
+    $(".add_follow").click(function () {
+        var uid = $(this).attr('uid');
+        var to_uid = $(this).attr('to_uid');
+        /*alert(uid+'//'+to_uid);
+        return false;*/
+        var add_follow_url = '{:url("addFollowsFansById")}';
+        $.ajax({
+            url:add_follow_url,
+            type:'post',
+            data:{'uid':uid,'to_uid':to_uid,'follow_state':1},
+            dataType:'json',
+            success:function (data) {
+                console.log(data);
+                if(data.code){
+                    $(this).text('取消关注'+uid);
+                    alert('关注成功');
+                }else {
+                    console.log(data);
+                    alert(data.msg);
+                }
+            },error:function () {
+                alert('服务器繁忙，操作失败');
+            }
+        })
+        return false;
+    })
+})
+</script>
+</body>
+</html>

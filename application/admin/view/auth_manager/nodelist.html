@@ -1,0 +1,195 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+	{include file="Public/header"/}
+	<title>节点管理</title>
+</head>
+<body>
+<nav class="breadcrumb">
+	<i class="Hui-iconfont">&#xe67f;</i>
+	首页
+	<span class="c-gray en">&gt;</span>
+	权限管理
+	<span class="c-gray en">&gt;</span>
+	节点管理
+	<a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" >
+		<i class="Hui-iconfont">&#xe68f;</i>
+	</a>
+</nav>
+<div class="page-container">
+	<div class="cl pd-5 bg-1 bk-gray mt-20">
+		<span class="l">
+			<a href="javascript:;" onclick="datadel()" class="btn btn-danger radius">
+				<i class="Hui-iconfont">&#xe6e2;</i>批量删除
+			</a>
+			<a class="btn btn-primary radius" href="javascript:;" onclick="admin_role_add('新增权限节点','nodeAdd.html','800')">
+				<i class="Hui-iconfont">&#xe600;</i>新增权限节点
+			</a>
+		</span>
+	</div>
+	<div class="mt-20">
+		<table class="table table-border table-bordered table-hover table-bg table-sort">
+			<thead>
+			<tr class="text-c">
+				<th width="25"><input type="checkbox" value="" name=""></th>
+				<th width="40">ID</th>
+				<th width="40">PID</th>
+				<th>名称</th>
+				<th width="200">URL</th>
+				<th width="300">是否为菜单</th>
+				<th>状态</th>
+				<th>仅开发者模式显示</th>
+				<th width="70">操作</th>
+			</tr>
+			</thead>
+			<tbody>
+
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{include file="Public/footer" /}
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="/Hui/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+<script type="text/javascript">
+	/*排序*/
+    $('.table-sort').dataTable({
+        "createdRow": function( row, data, dataIndex ) {
+            $(row).addClass( 'text-c all-del' );
+        },
+        stateSave:true,  //状态保存
+        serverSide:true, //服务器模式
+        processing:true, //打印信息字符信息
+        paging    :true, // 开启本地分页
+        searching :true, //开启搜索
+        lengthMenu:[10,20,30,40,100,150,300], //左上角select选项
+        ajax: {
+            "url":"",
+            "data":function(d){    //额外传递的参数
+            }
+        },
+        aoColumns:[
+            {
+                "data": "id",
+                "render": function (data, type, full, meta) {
+                    return '<input type="checkbox"  name=""  value="' + data + '" />';
+                },
+
+                "orderable":false
+            },
+            {data : "id"},
+            {data : "pid"},
+            {data : "title"},
+            {data : "name"},
+            {
+                "data":{type:"type"},
+                "render" : function(data){
+                    if(data.type == 2){
+                        return '<span class="label label-success radius">是</span>';
+                    }
+                    return '<span class="label label-defaunt radius">否</span>';
+                }
+            },
+            {
+                "data":{"status":"status"},
+                "render" : function(data){
+                    if(data.status){
+                        return '<span class="label label-success radius">是</span>';
+                    }
+                    return '<span class="label label-defaunt radius">否</span>';
+                }
+            },
+            {
+                "data":{"is_dev":"is_dev"},
+                "render" : function(data){
+                    if(data.is_dev){
+                        return '<span class="label label-success radius">是</span>';
+                    }
+                    return '<span class="label label-defaunt radius">否</span>';
+                }
+            },
+            {
+                "data": {"id": "id"},
+                "render" : function(data){
+                    return '<a title="编辑" href="javascript:;" onclick="admin_role_edit(\'' + "编辑" + '\',\'' + 'nodeEdit.html?id=' + data.id + '\',' + 800 + ')" style="text-decoration:none"><i class="Hui-iconfont">&#xe6df;</i></a><a title="删除" href="javascript:;" onclick="admin_role_del(this,\'' + data.id + '\')" class="ml-5" style="text-decoration:none"><i class="Hui-iconfont">&#xe6e2;</i></a>';
+                }
+            },
+
+
+        ]
+    });
+	/*管理员-角色-添加*/
+    function admin_role_add(title,url,w,h){
+        layer_show(title,url,w,h);
+    }
+	/*管理员-角色-编辑*/
+    function admin_role_edit(title,url,id,w,h){
+        layer_show(title,url,w,h);
+    }
+    var nodeListDel = "{:url('nodedel')}"; /*删除*/
+    var nodeAllDel  = "{:url('nodebatchdel')}";   /*批量删除*/
+	/*管理员-角色-删除*/
+    function admin_role_del(obj,id){
+        layer.confirm('角色删除须谨慎，确认要删除吗？',function(index){
+            $.ajax({
+                type: 'POST',
+                url: nodeListDel,
+                data: {id: id},
+                dataType: 'json',
+                success: function(data) {
+                    if (data.code) {
+                        $(obj).parents("tr").remove();
+                        layer.msg('已删除!', {icon: 1,time:100}, function () {
+                                location.reload();
+                            });
+                    } else {
+                        layer.msg(data.msg, {icon: 2, time: 2000});
+                    }
+                },
+                error:function(data) {
+                    console.log(data.msg);
+                }
+            });
+        });
+    }
+
+    function datadel(){
+        var ids = "";
+        $(".table").find("input:checked").each(function(){
+            if (true == $(this).prop("checked")) {
+                ids += $(this).prop('value')+',';
+            }
+        });
+        layer.confirm('确定节点删除吗？',function(index){
+            $.ajax({
+                type: "POST",
+                url: nodeAllDel,
+                data: {
+                    ids : ids
+                },
+                error: function(request) {
+                    layer.msg('操作错误，请重试',{icon: 1,time:1500})
+                },
+                success: function(data) {
+                    if(data.code)
+                    {
+                        layer.msg(data.msg,{icon: 1,time:1500});
+                        $(".table").find("input:checked").each(function(){
+                            if (true == $(this).prop("checked")){
+                                if($(this).parent().parent().hasClass("all-del")){
+                                    $(this).parent().parent().remove();
+                                }
+                            }
+                        });
+                    }else{
+                        layer.msg(data.msg,{icon: 5,time:1500})
+                    }
+                }
+            });
+        });
+    }
+</script>
+</body>
+</html>
